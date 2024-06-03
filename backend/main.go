@@ -247,7 +247,9 @@ func fragmentPostHandler(c *gin.Context) {
 	// write the fragment to the json file
 	err := processNewFragment(content)
 	if err != nil {
-		fmt.Println("Error processing new fragment:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Error processing new fragments",
+		})
 		return
 	}
 

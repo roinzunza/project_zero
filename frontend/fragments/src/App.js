@@ -33,9 +33,9 @@ const Fragment = () => {
     const fetchFragments = async () => {
       try {
         const response = await axios.get('http://localhost:8080/fragments');
-        console.log(response.data)
         const { data } = response.data;
-        setFragments(data); // Assuming fragmentList is the array of fragments in the response
+        if (!data) return; // If data is not available, do not update local state
+        setFragments(data); // Update fragments state only if data is available
       } catch (error) {
         console.error('Error fetching fragments:', error);
       }
@@ -43,26 +43,36 @@ const Fragment = () => {
 
     // Call the function to fetch fragments
     fetchFragments();
-    // Set up interval to fetch fragments periodically
-    const intervalId = setInterval(fetchFragments, 1); // Fetch every 5 seconds
+      // Set up interval to fetch fragments periodically
+      const intervalId = setInterval(fetchFragments, 5000); // Fetch every 5 seconds
 
-    // Clean up interval on component unmount
-    return () => clearInterval(intervalId);
+      // Clean up interval on component unmount
+      return () => clearInterval(intervalId);
   }, []); // Empty dependency array to ensure this effect runs only once on component mount
 
 
   const handleNewFragment = async () => {
     try {
-      const response = await axios.post('http://localhost:8080/new_fragment', {
-        content: newFragment, // Use content from the text area as the request body
-      });
-      console.log('New fragment added:', response.data);
-      // Assuming response.data contains the newly created fragment
-      setFragments([...fragments, response.data]); // Update fragments state with the new fragment
+      // Save the new fragment locally first
+      const newFragmentData = {
+        Content: newFragment,
+        Date: new Date().toISOString(), // Assuming you want to use the current date
+        // Other properties can be set here if needed
+      };
+      setFragments([newFragmentData, ...fragments]); // Prepend the new fragment to the fragments array
       setNewFragment('');
       setCharacterCount(0); // Reset character count after submitting
+  
+      // Make the request to save the new fragment on the server
+      const response = await axios.post('http://localhost:8080/new_fragment', {
+        content: newFragment,
+      });
+      console.log('New fragment added:', response.data);
+      // Update the fragment with the ID and other properties returned by the server, if needed
     } catch (error) {
       console.error('Error adding new fragment:', error);
+      // If there's an error, you might want to revert the local state change
+      // Or handle it based on your application logic
     }
   };
 
@@ -89,12 +99,12 @@ const Fragment = () => {
         <CharacterCounter>{characterCount}/150</CharacterCounter>
       </ActionContainer>
       <FragmentList>
-        {fragments.map(fragment => (
-          <FragmentItem key={fragment.Id}>
-            {fragment.Content} {/* Render the Content property */}
-          </FragmentItem>
-        ))}
-      </FragmentList>
+  {fragments.slice().reverse().map(fragment => (
+    <FragmentItem key={fragment.Id}>
+      {fragment.Content}
+    </FragmentItem>
+  ))}
+</FragmentList>
     </Container>
   );
 };
