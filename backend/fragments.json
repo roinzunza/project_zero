@@ -1,0 +1,41 @@
+[
+    {
+        "Id": 1,
+        "Content": "This is the content of my first Fragment entry.",
+        "Date": "2024-06-03T09:42:59Z",
+        "Likes": 0,
+        "Dislikes": 20,
+        "Views": 0,
+        "Hashtags": [
+            "#first",
+            "#Fragment"
+        ],
+        "Edited": false,
+        "EditedDate": "0001-01-01T00:00:00Z"
+    },
+    {
+        "Id": 2,
+        "Content": "This is the content of my second Fragment entry.",
+        "Date": "2024-06-03T09:42:59Z",
+        "Likes": 10,
+        "Dislikes": 5,
+        "Views": 50,
+        "Hashtags": [
+            "#second",
+            "#Fragment"
+        ],
+        "Edited": true,
+        "EditedDate": "0001-01-01T00:00:00Z"
+    },
+    {
+        "Id": 3,
+        "Content": "First working demo...",
+        "Date": "2024-06-02T22:56:41.453422-07:00",
+        "Likes": 0,
+        "Dislikes": 0,
+        "Views": 0,
+        "Hashtags": [],
+        "Edited": false,
+        "EditedDate": "0001-01-01T00:00:00Z"
+    }
+]

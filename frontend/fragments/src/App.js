@@ -1,125 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios'; // Import axios for making HTTP requests
+
 import { ThemeProvider } from '@emotion/react';
-import styled from '@emotion/styled';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMoon, faSun, faBolt } from '@fortawesome/free-solid-svg-icons';
 
-// Define your theme
-const lightTheme = {
-  background: '#ffffff',
-  text: '#262626',
-};
+import { 
+      Container,
+     Title, 
+     TextArea, 
+     CharacterCounter,
+     Button, 
+     ThemeToggleButton, 
+     BoltIcon, 
+     ActionContainer,
+     ButtonContainer,
+     FragmentList,
+     FragmentItem,
+     lightTheme,
+     darkTheme,
 
-const darkTheme = {
-  background: '#121212',
-  text: '#ffffff',
-};
+} from './styles/styles';
 
-const BoltIcon = styled(FontAwesomeIcon)`
-  font-size: 3rem; // Adjust the size of the icon as needed
-  margin-bottom: 1rem; // Add space between the icon and the title
-`;
-
-// Create styled components
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center; /* Center vertically */
-  padding: 2rem;
-  background-color: ${({ theme }) => theme.background};
-  color: ${({ theme }) => theme.text};
-  height: 100vh; /* Set height to viewport height */
-`;
-const Title = styled.h1`
-  font-size: 2.5rem;
-  margin-bottom: 1.5rem;
-  font-weight: bold;
-`;
-
-const TextArea = styled.textarea`
-  position: relative; /* Required for absolute positioning */
-  width: 300px; /* Set a fixed width */
-  margin: 0 auto; /* Center horizontally */
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border: 1px solid ${({ theme }) => theme.text};
-  border-radius: 5px;
-  font-size: 1.2rem;
-  resize: vertical;
-  background-color: ${({ theme }) => theme.background};
-  color: ${({ theme }) => theme.text};
-  max-width: 100%;
-  max-height: 200px; /* Limit the height */
-`;
-
-const CharacterCounter = styled.div`
-  position: relative;
-  bottom: 0;
-  right: 0;
-  padding: 0.2rem 0.5rem;
-  font-size: 0.8rem;
-  color: ${({ theme }) => theme.text};
-  background-color: ${({ theme }) => theme.background};
-  border-top-left-radius: 5px;
-`;
-
-const Button = styled.button`
-  padding: 0.7rem 2rem;
-  background-color: ${({ theme }) => theme.text};
-  color: ${({ theme }) => theme.background};
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1.2rem;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: ${({ theme }) => (theme === darkTheme ? '#313436' : '#313436')};
-  }
-`;
-
-const FragmentList = styled.div`
-  width: 100%;
-  max-width: 600px;
-  margin-top: 2rem;
-`;
-
-const FragmentItem = styled.div`
-  background-color: ${({ theme }) => theme.background};
-  border: 1px solid ${({ theme }) => theme.text};
-  border-radius: 5px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  font-size: 1.2rem;
-  color: ${({ theme }) => theme.text};
-`;
-
-const ThemeToggleButton = styled(Button)`
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-`;
-
-const ActionContainer = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const ButtonContainer = styled.div`
-  margin-right: 1rem; /* Adjust spacing between button and character counter */
-`;
 
 const Fragment = () => {
   const [fragments, setFragments] = useState([]);
   const [newFragment, setNewFragment] = useState('');
   const [characterCount, setCharacterCount] = useState(0);
 
-  const handleNewFragment = () => {
-    if (newFragment.trim() !== '') {
-      setFragments([...fragments, newFragment]);
+  useEffect(() => {
+    // Function to fetch fragments from the API
+    const fetchFragments = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/fragments');
+        console.log(response.data)
+        const { data } = response.data;
+        setFragments(data); // Assuming fragmentList is the array of fragments in the response
+      } catch (error) {
+        console.error('Error fetching fragments:', error);
+      }
+    };
+
+    // Call the function to fetch fragments
+    fetchFragments();
+    // Set up interval to fetch fragments periodically
+    const intervalId = setInterval(fetchFragments, 1); // Fetch every 5 seconds
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []); // Empty dependency array to ensure this effect runs only once on component mount
+
+
+  const handleNewFragment = async () => {
+    try {
+      const response = await axios.post('http://localhost:8080/new_fragment', {
+        content: newFragment, // Use content from the text area as the request body
+      });
+      console.log('New fragment added:', response.data);
+      // Assuming response.data contains the newly created fragment
+      setFragments([...fragments, response.data]); // Update fragments state with the new fragment
       setNewFragment('');
       setCharacterCount(0); // Reset character count after submitting
+    } catch (error) {
+      console.error('Error adding new fragment:', error);
     }
   };
 
@@ -146,10 +89,12 @@ const Fragment = () => {
         <CharacterCounter>{characterCount}/150</CharacterCounter>
       </ActionContainer>
       <FragmentList>
-      {[...fragments].reverse().map((fragment, index) => (
-        <FragmentItem key={index}>{fragment}</FragmentItem>
-      ))}
-    </FragmentList>
+        {fragments.map(fragment => (
+          <FragmentItem key={fragment.Id}>
+            {fragment.Content} {/* Render the Content property */}
+          </FragmentItem>
+        ))}
+      </FragmentList>
     </Container>
   );
 };
